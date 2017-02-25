@@ -3,10 +3,14 @@ QT += core gui widgets
 TARGET = Parsey
 TEMPLATE = app
 
-SOURCES += main.cpp\
-        MainWindow.cpp
+SOURCES += \
+    main.cpp \
+    UI/MainWindow.cpp \
+    Controller/AppController.cpp
 
-HEADERS  += MainWindow.h
+HEADERS  += \
+    UI/MainWindow.h \
+    Controller/AppController.h
 
 DESTDIR = $$OUT_PWD/product
 EXE_PATH = $$DESTDIR\\$$TARGET.exe
@@ -23,5 +27,8 @@ win32 {
 # Copy database ini file
 win32 {
     DB_INI_PATH = $$RESOURCES_DIR\db_config.ini
-    QMAKE_POST_LINK += && "xcopy $$shell_path($$DB_INI_PATH) $$shell_path($$DESTDIR)"
+    QMAKE_POST_LINK += && "xcopy $$shell_path($$DB_INI_PATH) $$shell_path($$DESTDIR) /Y"
 }
+
+RESOURCES += \
+    ../Resources/resources.qrc
