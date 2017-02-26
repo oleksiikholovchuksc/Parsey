@@ -21,14 +21,17 @@ public:
 signals:
     void filesAdditionRequested(const QStringList &files);
     void filesRemovalRequested(const std::vector<int> &rowsToRemove);
+    void processingStartRequested();
 
 private:
     void arrangeWidgets();
     void handleAddFilesActionTriggered();
     void handleRemoveSelectedActionTriggered();
+    void updateActionsAvailability();
 
     QAction *mAddFilesAction;
     QAction *mRemoveSelectedFilesAction;
+    QAction *mDoProcessingAction;
     FilesListWidget *mFilesList;
 };
 

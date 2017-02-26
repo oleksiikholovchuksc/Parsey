@@ -18,6 +18,7 @@ public:
     void addFiles(const QStringList &files);
     void removeFiles(const std::vector<int> &indices);
     std::vector<int> getSelectedRows();
+    bool isEmpty();
 
 private:
     FilesListModel *mModel;

@@ -12,6 +12,10 @@ namespace Parsey {
     namespace Model {
         class FilesModel;
     }
+
+    namespace Workers {
+        class Worker;
+    }
 }
 
 namespace Parsey {
@@ -30,9 +34,11 @@ public:
 private:
     void onFilesAdditionRequest(const QStringList &files);
     void onFilesRemovalRequest(const std::vector<int> &rowsToRemove);
+    void onProcessingStartRequest();
 
     std::unique_ptr<UI::MainWindow> mMainWindow;
     std::unique_ptr<Model::FilesModel> mFilesModel;
+    std::unique_ptr<Workers::Worker> mWorker;
 };
 
 }

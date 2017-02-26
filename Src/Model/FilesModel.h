@@ -2,7 +2,6 @@
 #define FILESMODEL_H
 
 #include <QStringList>
-#include <list>
 #include <vector>
 
 namespace Parsey {
@@ -31,7 +30,7 @@ public:
     void removeFilesWithIndices(const std::vector<int> indicesToRemove);
 
 private:
-    std::list<ItemData> mItems;
+    std::vector<ItemData> mItems;
 };
 
 }

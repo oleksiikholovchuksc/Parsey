@@ -37,5 +37,10 @@ std::vector<int> FilesListWidget::getSelectedRows()
     return result;
 }
 
+bool FilesListWidget::isEmpty()
+{
+    return mModel->rowCount(QModelIndex()) == 0;
+}
+
 }
 }

@@ -1,4 +1,4 @@
-QT += core gui widgets
+QT += core gui widgets sql concurrent
 
 TARGET = Parsey
 TEMPLATE = app
@@ -11,14 +11,16 @@ SOURCES += \
     Controller/AppController.cpp \
     UI/FilesListWidget.cpp \
     UI/FilesListModel.cpp \
-    Model/FilesModel.cpp
+    Model/FilesModel.cpp \
+    Workers/Worker.cpp
 
 HEADERS  += \
     UI/MainWindow.h \
     Controller/AppController.h \
     UI/FilesListWidget.h \
     UI/FilesListModel.h \
-    Model/FilesModel.h
+    Model/FilesModel.h \
+    Workers/Worker.h
 
 DESTDIR = $$OUT_PWD/product
 EXE_PATH = $$DESTDIR\\$$TARGET.exe
