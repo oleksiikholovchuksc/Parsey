@@ -28,6 +28,7 @@ public:
 
     void addFiles(const QStringList &files);
     void removeFilesWithIndices(const std::vector<int> indicesToRemove);
+    const std::vector<ItemData>& getData() const;
 
 private:
     std::vector<ItemData> mItems;

@@ -12,11 +12,11 @@ class Worker : public QObject
 
 public:
     Worker(const QString &dbConnectionIniFilePath);
-
     void startFilesProcessing(const QStringList &files);
 
 signals:
     void startedProcessing();
+    void databaseConnectionError(const QString &info);
 
 private:
     struct DatabaseConnectionConfig

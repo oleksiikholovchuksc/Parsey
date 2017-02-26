@@ -2,6 +2,8 @@
 
 #include <QSettings>
 #include <QtSql/QSqlDatabase>
+#include <QtSql/QSqlQuery>
+#include <QDebug>
 #include <QtConcurrent>
 
 namespace Parsey {
@@ -28,22 +30,50 @@ Worker::Worker(const QString &dbConnectionIniFilePath)
     mDatabaseConnectionConfig.portNumber = connectionSettings.value(INI_PORT_NUMBER_KEY, INI_WRONG_VALUE_INT).toInt();
     mDatabaseConnectionConfig.userName = connectionSettings.value(INI_USERNAME_KEY, INI_WRONG_VALUE_STR).toString();
     mDatabaseConnectionConfig.password = connectionSettings.value(INI_PASSWORD_KEY, INI_WRONG_VALUE_STR).toString();
-
-//    database->setHostName(serverName);
-//    database->setDatabaseName(databaseName);
-//    database->setPort(portNumber);
-//    database->setUserName(username);
-//    database->setPassword(password);
-
-//    if(!database->open())
-//    {
-//        throw std::runtime_error("Couldn't connect to a database");
-//    }
 }
 
 void Worker::startFilesProcessing(const QStringList &files)
 {
     emit startedProcessing();
+
+    for(const QString &file : files)
+    {
+        QtConcurrent::run(
+            [this, file] ()
+            {
+                QSqlDatabase connection(QSqlDatabase::addDatabase(MYSQL_DRIVER_KEY));
+                connection.setHostName(mDatabaseConnectionConfig.hostName);
+                connection.setDatabaseName(mDatabaseConnectionConfig.databaseName);
+                connection.setPort(mDatabaseConnectionConfig.portNumber);
+                connection.setUserName(mDatabaseConnectionConfig.userName);
+                connection.setPassword(mDatabaseConnectionConfig.password);
+                if(!connection.open())
+                {
+                    emit databaseConnectionError(file);
+                    return;
+                }
+
+                const QString fileName = QFileInfo(file).completeBaseName();
+
+                QSqlQuery malwareClassesInsertQuery(connection);
+                malwareClassesInsertQuery.prepare("INSERT INTO malware_classes(name) VALUES (:name);");
+                malwareClassesInsertQuery.bindValue(":name", fileName);
+                malwareClassesInsertQuery.exec();
+                int malwareClassId = malwareClassesInsertQuery.lastInsertId().toInt();
+
+                QSqlQuery malwareObjInsertQuery(connection);
+                malwareObjInsertQuery.prepare(
+                            "INSERT INTO malware_objects(name, date_added, malware_class_id) \
+                             VALUES(:name, :date_added, :malware_class_id);");
+                malwareObjInsertQuery.bindValue(":name", fileName);
+                malwareObjInsertQuery.bindValue(":date_added", QDateTime::currentDateTime().date());
+                malwareObjInsertQuery.bindValue(":malware_class_id", malwareClassId);
+                malwareObjInsertQuery.exec();
+
+                connection.close();
+            }
+        );
+    }
 }
 
 }

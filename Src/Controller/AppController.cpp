@@ -48,7 +48,15 @@ void AppController::onFilesRemovalRequest(const std::vector<int> &rowsToRemove)
 
 void AppController::onProcessingStartRequest()
 {
+    auto data = mFilesModel->getData();
+    QStringList filesToProcess;
+    for(const auto& dataItem : data)
+    {
+        if(!dataItem.wasProcessed)
+            filesToProcess.push_back(dataItem.filename);
+    }
 
+    mWorker->startFilesProcessing(filesToProcess);
 }
 
 }

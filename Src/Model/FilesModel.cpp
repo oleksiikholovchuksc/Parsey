@@ -28,5 +28,10 @@ void FilesModel::removeFilesWithIndices(const std::vector<int> indices)
     mItems = newItemList;
 }
 
+const std::vector<FilesModel::ItemData> &FilesModel::getData() const
+{
+    return mItems;
+}
+
 }
 }
