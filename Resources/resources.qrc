@@ -4,5 +4,9 @@
         <file>Icons/add_file@2x.png</file>
         <file>Icons/remove_file.png</file>
         <file>Icons/remove_file@2x.png</file>
+        <file>Icons/done_file.png</file>
+        <file>Icons/done_file@2x.png</file>
+        <file>Icons/file.png</file>
+        <file>Icons/file@2x.png</file>
     </qresource>
 </RCC>

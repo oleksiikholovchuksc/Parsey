@@ -6,6 +6,8 @@
 namespace Parsey {
 namespace UI {
 
+class FilesListWidget;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -15,9 +17,12 @@ public:
 
 private:
     void arrangeWidgets();
+    void handleAddFilesActionTriggered();
+    void handleRemoveSelectedActionTriggered();
 
     QAction *mAddFilesAction;
     QAction *mRemoveSelectedFilesAction;
+    FilesListWidget *mFilesList;
 };
 
 }
