@@ -15,8 +15,8 @@ public:
     void startFilesProcessing(const QStringList &files);
 
 signals:
-    void startedProcessing();
     void databaseConnectionError(const QString &info);
+    void finishedProcessing(const QString &file);
 
 private:
     struct DatabaseConnectionConfig
@@ -27,6 +27,8 @@ private:
         QString userName;
         QString password;
     } mDatabaseConnectionConfig;
+
+    void processOneFile(const QString &filePath);
 };
 
 }

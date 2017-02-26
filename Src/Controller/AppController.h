@@ -35,6 +35,7 @@ private:
     void onFilesAdditionRequest(const QStringList &files);
     void onFilesRemovalRequest(const std::vector<int> &rowsToRemove);
     void onProcessingStartRequest();
+    void onFileProcessingFinished(const QString &file);
 
     std::unique_ptr<UI::MainWindow> mMainWindow;
     std::unique_ptr<Model::FilesModel> mFilesModel;

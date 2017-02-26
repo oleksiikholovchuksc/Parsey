@@ -34,46 +34,92 @@ Worker::Worker(const QString &dbConnectionIniFilePath)
 
 void Worker::startFilesProcessing(const QStringList &files)
 {
-    emit startedProcessing();
-
-    for(const QString &file : files)
+    for(const QString &filePath : files)
     {
-        QtConcurrent::run(
-            [this, file] ()
-            {
-                QSqlDatabase connection(QSqlDatabase::addDatabase(MYSQL_DRIVER_KEY));
-                connection.setHostName(mDatabaseConnectionConfig.hostName);
-                connection.setDatabaseName(mDatabaseConnectionConfig.databaseName);
-                connection.setPort(mDatabaseConnectionConfig.portNumber);
-                connection.setUserName(mDatabaseConnectionConfig.userName);
-                connection.setPassword(mDatabaseConnectionConfig.password);
-                if(!connection.open())
-                {
-                    emit databaseConnectionError(file);
-                    return;
-                }
-
-                const QString fileName = QFileInfo(file).completeBaseName();
-
-                QSqlQuery malwareClassesInsertQuery(connection);
-                malwareClassesInsertQuery.prepare("INSERT INTO malware_classes(name) VALUES (:name);");
-                malwareClassesInsertQuery.bindValue(":name", fileName);
-                malwareClassesInsertQuery.exec();
-                int malwareClassId = malwareClassesInsertQuery.lastInsertId().toInt();
-
-                QSqlQuery malwareObjInsertQuery(connection);
-                malwareObjInsertQuery.prepare(
-                            "INSERT INTO malware_objects(name, date_added, malware_class_id) \
-                             VALUES(:name, :date_added, :malware_class_id);");
-                malwareObjInsertQuery.bindValue(":name", fileName);
-                malwareObjInsertQuery.bindValue(":date_added", QDateTime::currentDateTime().date());
-                malwareObjInsertQuery.bindValue(":malware_class_id", malwareClassId);
-                malwareObjInsertQuery.exec();
-
-                connection.close();
-            }
-        );
+        processOneFile(filePath);
     }
+}
+
+void Worker::processOneFile(const QString &filePath)
+{
+    qDebug() << "Started processing of " << filePath;
+
+    QSqlDatabase connection(QSqlDatabase::addDatabase(MYSQL_DRIVER_KEY));
+    connection.setHostName(mDatabaseConnectionConfig.hostName);
+    connection.setDatabaseName(mDatabaseConnectionConfig.databaseName);
+    connection.setPort(mDatabaseConnectionConfig.portNumber);
+    connection.setUserName(mDatabaseConnectionConfig.userName);
+    connection.setPassword(mDatabaseConnectionConfig.password);
+    if(!connection.open())
+    {
+        emit databaseConnectionError(filePath);
+        return;
+    }
+
+    const QString className = QFileInfo(filePath).baseName();
+    const QString objectName = QFileInfo(filePath).completeBaseName();
+
+    QSqlQuery malwareClassesInsertQuery(connection);
+    malwareClassesInsertQuery.prepare("INSERT INTO malware_classes(name) VALUES (:name);");
+    malwareClassesInsertQuery.bindValue(":name", className);
+    malwareClassesInsertQuery.exec();
+    int malwareClassId = malwareClassesInsertQuery.lastInsertId().toInt();
+
+    QSqlQuery malwareObjInsertQuery(connection);
+    malwareObjInsertQuery.prepare(
+                "INSERT INTO malware_objects(name, date_added, malware_class_id) \
+                 VALUES(:name, :date_added, :malware_class_id);");
+    malwareObjInsertQuery.bindValue(":name", objectName);
+    malwareObjInsertQuery.bindValue(":date_added", QDateTime::currentDateTime().date());
+    malwareObjInsertQuery.bindValue(":malware_class_id", malwareClassId);
+    malwareObjInsertQuery.exec();
+    int malwareObjId = malwareObjInsertQuery.lastInsertId().toInt();
+
+    QFile file(filePath);
+    file.open(QIODevice::ReadOnly);
+    QTextStream textStream(&file);
+    while(!textStream.atEnd())
+    {
+        const QString dataString = textStream.readLine();
+        if(dataString != "API" && !dataString.startsWith('_'))
+        {
+            const QString functionName = dataString.split(' ').first();
+
+            QSqlQuery searchFunctionNameQuery(connection);
+            QString sqlQueryString = "SELECT id, api_name FROM api_objects WHERE api_name='%1';";
+            sqlQueryString = sqlQueryString.arg(functionName);
+            searchFunctionNameQuery.exec(sqlQueryString);
+
+            int functionId = -1;
+            if(searchFunctionNameQuery.next())
+            {
+                functionId = searchFunctionNameQuery.value("id").toInt();
+            }
+
+            if(functionId == -1)
+            {
+                QSqlQuery apiInsertQuery(connection);
+                apiInsertQuery.prepare("INSERT INTO api_objects(api_name) VALUES (:api_name);");
+                apiInsertQuery.bindValue(":api_name", functionName);
+                apiInsertQuery.exec();
+                functionId = apiInsertQuery.lastInsertId().toInt();
+            }
+
+            QSqlQuery malwareEventsInsertQuery(connection);
+            malwareEventsInsertQuery.prepare(
+                        "INSERT INTO malware_events(api_id, returned_value, malware_id) \
+                         VALUES(:api_id, :returned_value, :malware_id);");
+            malwareEventsInsertQuery.bindValue(":api_id", functionId);
+            malwareEventsInsertQuery.bindValue(":returned_value", QString());
+            malwareEventsInsertQuery.bindValue(":malware_id", malwareObjId);
+            malwareEventsInsertQuery.exec();
+        }
+    }
+
+    file.close();
+    connection.close();
+
+    emit finishedProcessing(filePath);
 }
 
 }

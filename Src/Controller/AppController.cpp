@@ -3,6 +3,7 @@
 #include "UI/MainWindow.h"
 #include "Model/FilesModel.h"
 #include "Workers/Worker.h"
+#include <QDebug>
 
 namespace Parsey {
 namespace Controller {
@@ -22,6 +23,9 @@ AppController::AppController()
 
     connect(mMainWindow.get(), &UI::MainWindow::processingStartRequested,
             this, &AppController::onProcessingStartRequest);
+
+    connect(mWorker.get(), &Workers::Worker::finishedProcessing,
+            this, &AppController::onFileProcessingFinished);
 }
 
 AppController::~AppController()
@@ -57,6 +61,11 @@ void AppController::onProcessingStartRequest()
     }
 
     mWorker->startFilesProcessing(filesToProcess);
+}
+
+void AppController::onFileProcessingFinished(const QString &file)
+{
+    qDebug() << "Finished import of " << file;
 }
 
 }
