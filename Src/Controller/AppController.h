@@ -2,10 +2,15 @@
 #define APPCONTROLLER_H
 
 #include <QObject>
+#include <memory>
 
 namespace Parsey {
     namespace UI {
         class MainWindow;
+    }
+
+    namespace Model {
+        class FilesModel;
     }
 }
 
@@ -23,7 +28,11 @@ public:
     void run();
 
 private:
-    UI::MainWindow *mMainWindow;
+    void onFilesAdditionRequest(const QStringList &files);
+    void onFilesRemovalRequest(const std::vector<int> &rowsToRemove);
+
+    std::unique_ptr<UI::MainWindow> mMainWindow;
+    std::unique_ptr<Model::FilesModel> mFilesModel;
 };
 
 }

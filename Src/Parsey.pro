@@ -10,13 +10,15 @@ SOURCES += \
     UI/MainWindow.cpp \
     Controller/AppController.cpp \
     UI/FilesListWidget.cpp \
-    UI/FilesListModel.cpp
+    UI/FilesListModel.cpp \
+    Model/FilesModel.cpp
 
 HEADERS  += \
     UI/MainWindow.h \
     Controller/AppController.h \
     UI/FilesListWidget.h \
-    UI/FilesListModel.h
+    UI/FilesListModel.h \
+    Model/FilesModel.h
 
 DESTDIR = $$OUT_PWD/product
 EXE_PATH = $$DESTDIR\\$$TARGET.exe

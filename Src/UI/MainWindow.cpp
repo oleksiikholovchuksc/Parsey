@@ -8,6 +8,9 @@
 #include <QToolBar>
 #include <QPushButton>
 #include <QStatusBar>
+#include <QFileDialog>
+#include <QStandardPaths>
+#include <QDebug>
 
 namespace Parsey {
 namespace UI {
@@ -20,11 +23,24 @@ MainWindow::MainWindow(QWidget *parent)
     , mRemoveSelectedFilesAction(new QAction(QIcon(":/Icons/Icons/remove_file.png"), "Remove selected"))
     , mFilesList(new FilesListWidget)
 {
-    connect(mAddFilesAction, &QAction::triggered, this, &MainWindow::handleAddFilesActionTriggered);
-    connect(mRemoveSelectedFilesAction, &QAction::triggered, this, &MainWindow::handleRemoveSelectedActionTriggered);
+    connect(mAddFilesAction, &QAction::triggered,
+            this, &MainWindow::handleAddFilesActionTriggered);
+
+    connect(mRemoveSelectedFilesAction, &QAction::triggered,
+            this, &MainWindow::handleRemoveSelectedActionTriggered);
 
     arrangeWidgets();
     resize(START_WINDOW_SIZE);
+}
+
+void MainWindow::addFiles(const QStringList &files)
+{
+    mFilesList->addFiles(files);
+}
+
+void MainWindow::removeFiles(const std::vector<int> &indices)
+{
+    mFilesList->removeFiles(indices);
 }
 
 void MainWindow::arrangeWidgets()
@@ -54,12 +70,24 @@ void MainWindow::arrangeWidgets()
 
 void MainWindow::handleAddFilesActionTriggered()
 {
+    const auto desktopPath = QStandardPaths::standardLocations(QStandardPaths::DesktopLocation)[0];
 
+    QStringList files
+            = QFileDialog::getOpenFileNames(
+                this,
+                "Choose files",
+                desktopPath,
+                "Text files (*.txt)");
+
+    if(!files.isEmpty())
+    {
+        emit filesAdditionRequested(files);
+    }
 }
 
 void MainWindow::handleRemoveSelectedActionTriggered()
 {
-
+    emit filesRemovalRequested(mFilesList->getSelectedRows());
 }
 
 }

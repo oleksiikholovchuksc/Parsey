@@ -15,6 +15,10 @@ class FilesListWidget : public QListView
 public:
     FilesListWidget(QWidget *parent = 0);
 
+    void addFiles(const QStringList &files);
+    void removeFiles(const std::vector<int> &indices);
+    std::vector<int> getSelectedRows();
+
 private:
     FilesListModel *mModel;
 };

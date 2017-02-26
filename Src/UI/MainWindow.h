@@ -15,6 +15,13 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = 0);
 
+    void addFiles(const QStringList &files);
+    void removeFiles(const std::vector<int> &indices);
+
+signals:
+    void filesAdditionRequested(const QStringList &files);
+    void filesRemovalRequested(const std::vector<int> &rowsToRemove);
+
 private:
     void arrangeWidgets();
     void handleAddFilesActionTriggered();

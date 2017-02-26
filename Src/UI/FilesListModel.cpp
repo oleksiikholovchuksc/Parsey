@@ -1,6 +1,8 @@
 #include "FilesListModel.h"
 
 #include <QIcon>
+#include <set>
+#include <QDebug>
 
 namespace Parsey {
 namespace UI {
@@ -42,6 +44,34 @@ QVariant FilesListModel::data(const QModelIndex &index, int role) const
     }
 
     return result;
+}
+
+void FilesListModel::addFiles(const QStringList &files)
+{
+    for(const QString &file : files)
+    {
+        mItems.push_back({file, false});
+    }
+
+    QModelIndex startChangeIndex(index(static_cast<int>(mItems.size())));
+    QModelIndex endChangeIndex(index(static_cast<int>(mItems.size()) + files.size() - 1));
+    emit dataChanged(startChangeIndex, endChangeIndex, {Qt::DisplayRole});
+}
+
+void FilesListModel::removeFiles(const std::vector<int> &indices)
+{
+    std::set<int> indicesSet(indices.begin(), indices.end());
+    std::vector<ItemInfo> newItemList;
+    for(int i = 0; i < static_cast<int>(mItems.size()); ++i)
+    {
+        if(indicesSet.find(i) == indicesSet.end())
+            newItemList.push_back(mItems[i]);
+    }
+    mItems = newItemList;
+
+    QModelIndex startChangeIndex(index(0));
+    QModelIndex endChangeIndex(index(static_cast<int>(mItems.size() + indices.size()) - 1));
+    emit dataChanged(startChangeIndex, endChangeIndex, {Qt::DisplayRole, Qt::DecorationRole});
 }
 
 }

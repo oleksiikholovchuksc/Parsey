@@ -17,6 +17,9 @@ public:
     int rowCount(const QModelIndex &parent) const override;
     QVariant data(const QModelIndex &index, int role) const override;
 
+    void addFiles(const QStringList &files);
+    void removeFiles(const std::vector<int> &indices);
+
 private:
     struct ItemInfo
     {
